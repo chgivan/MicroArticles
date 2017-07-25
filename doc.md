@@ -1,4 +1,4 @@
-change name to microArticle
+change name to microArticles
 
 Entities: [ Article, Comment, user ]
 
@@ -26,8 +26,8 @@ Commnents:{
 }
 
 API
-GET /articles/<articleID> ;;Returns a article with the given articleID
-GET /articles ;;Returns a list of articles
+articles GET /articles/<articleID> ;;Returns a article with the given articleID
+%% GET /articles ;;Returns a list of articles
 POST /articles ;; Create a new article, user must be login
 GET /search ;; Returns a list of articles base on the search query
 GET /articles/<articleID>/comments ;;Returns a list of comments of  the article, must be login
