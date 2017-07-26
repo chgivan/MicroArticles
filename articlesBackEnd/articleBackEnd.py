@@ -1,4 +1,5 @@
-from flask import Flask
+from flask import Flask, jsonify, request
+from uuid import uuid4
 app = Flask(__name__)
 
 articles = {
@@ -9,4 +10,39 @@ articles = {
 
 @app.route("/articles/<articleID>")
 def getArticle(articleID):
+   if not articleID in articles:
+      return getResponse(404,message="Articles with id {} doesn't exist".format(articleID))
    return articles[articleID]
+
+@app.route("/articles", methods=["POST"])
+def createArticle():
+   if request.data is None:
+      return getResponse(400, message=errMsg)
+
+   global articles
+   id = str(uuid4())
+   articles[id] = request.data
+   return getResponse(201,get="/articles/{}".format(id))
+
+@app.route("/articles/<articleID>", methods=["PUT"])
+def updateArticle(articleID):
+   if not articleID in articles:
+      return getResponse(404,message="Articles with id {} doesn't exist".format(articleID))
+   global article
+   article = articles[articleID]
+   if request.data is not None:
+      articles[articleID] = request.data      
+
+   return getResponse(
+      200,
+      get="/articles/{}".format(articleID),
+   )
+   
+
+def getResponse(status, **kwargs):
+    obj = {}
+    if kwargs is not None:
+        obj = kwargs
+    resp = jsonify(obj)
+    resp.status_code = status
+    return resp

@@ -26,9 +26,10 @@ Commnents:{
 }
 
 API
-articles GET /articles/<articleID> ;;Returns a article with the given articleID
-%% GET /articles ;;Returns a list of articles
-POST /articles ;; Create a new article, user must be login
+#articles GET /articles/<articleID> ;;Returns a article with the given articleID
+# GET /articles ;;Returns a list of articles
+#POST /articles ;; Create a new article, user must be login
+#PUT /articles ;; Update a new article, user must be login
 GET /search ;; Returns a list of articles base on the search query
 GET /articles/<articleID>/comments ;;Returns a list of comments of  the article, must be login
 POST /articles/<articleID>/comments ;;Create a new comment of the article
