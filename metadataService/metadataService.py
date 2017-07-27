@@ -1,7 +1,11 @@
-
+from threading import Thread
 from flask import Flask, jsonify, request
+import pika
 
 app = Flask(__name__)
+connection = pika.BlockingConnection(pika.ConnectionParameters('192.168.99.100'))
+channel = connection.channel()
+channel.queue_declare(queue="createArticle")
 
 cache = {
     "0":{
@@ -13,6 +17,17 @@ cache = {
         "authorUsername":"Chris"
     }
 }
+
+def OnArticleCreated():
+    print("Received Message")
+    
+def testThread():
+    channel.basic_consume(OnArticleCreated,queue="createArticle",no_ack=True)
+    channel.start_consuming()
+    print("Start Consuming")
+    
+thread = Thread(target=testThread)
+thread.start()
 
 @app.route("/articles/<articleID>/like", methods=["GET"])
 def like(articleID):

@@ -25,6 +25,8 @@ Commnents:{
  body:text
 }
 
+article -> createArticle -> metadata
+
 API
 #articles GET /articles/<articleID> ;;Returns a article with the given articleID
 # GET /articles ;;Returns a list of articles
