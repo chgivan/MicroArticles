@@ -15,6 +15,7 @@ def getArticle(articleID):
    return articles[articleID]
 
 @app.route("/articles", methods=["POST"])
+
 def createArticle():
    if request.data is None:
       return getResponse(400, message=errMsg)

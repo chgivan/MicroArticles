@@ -39,4 +39,4 @@ POST /login ;;Login a user gets username and password
 # PUT /user/<userID> ;; change the password of the user, must be login and owner of the userID
 POST /articles/<articleID>/like ;;increase the like count user must be login
 POST /articles/<articleID>/dislike ;;increase the dislike count user must be login
-GET /articles/<articleID>/metadata;; return the likes of the article
+GET /articles/<articleID>/metadata;; return the likes of the articlef
