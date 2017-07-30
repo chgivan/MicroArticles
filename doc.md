@@ -24,7 +24,7 @@ Commnents:{
  createDate:Date
  body:text
 }
-
+user -> createUser -> metadata
 article -> createArticle -> metadata
 
 API

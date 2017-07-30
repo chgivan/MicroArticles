@@ -1,5 +1,10 @@
+#Users BackEnd
+import pika, json
 from flask import Flask, jsonify, request
 app = Flask(__name__)
+connection = pika.BlockingConnection(pika.ConnectionParameters('192.168.99.100'))
+channel = connection.channel()
+channel.queue_declare(queue="createUser")
 
 users = {
     "0":{"username":"testtestopoulos", "password":"2323g4ffeddf"},
@@ -36,10 +41,25 @@ def createUser():
         return getResponse(400, message=error)
     for userID, user in users.items():
         if user["username"] ==  params["username"]:
-            return getResponse(400, message="username {} already exists! ".format(params["username"]))
+            return getResponse(
+                400,
+                message="username {} already exists! ".format(params["username"])
+            )
     usersCount += 1
-    users[str(usersCount)] = {"username":params["username"],"password":params["password"]}
-    
+    users[str(usersCount)] = {
+        "username":params["username"],
+        "password":params["password"]
+    }
+
+    channel.basic_publish(
+        exchange='',
+        routing_key='createUser',
+        body=json.dumps({
+            "userID":str(usersCount),
+            "username":params["username"]
+        }
+    ))
+
     return getResponse(
         201,
         get="/users/{}".format(usersCount),
@@ -56,7 +76,7 @@ def updateUser(userID):
     if "password" in params:
         user["password"] = params["password"]
     users[userID] = user
-    print (users)
+
     return getResponse(
         200,
         get="/users/{}".format(userID),
@@ -70,3 +90,6 @@ def getResponse(status, **kwargs):
     resp = jsonify(obj)
     resp.status_code = status
     return resp
+
+if __name__=='__main__':
+    app.run(debug=True, port=5002)

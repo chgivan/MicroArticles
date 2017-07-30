@@ -1,3 +1,4 @@
+#Article BackEnd
 from flask import Flask, jsonify, request
 from uuid import uuid4
 import pika, json
@@ -28,7 +29,7 @@ def createAsrticle():
    sendObj = {
       "articleID":id,
       "title":data["title"],
-      "authorID":"0"
+      "authorID":data["authorID"]
    }
 
    channel.basic_publish(
@@ -46,13 +47,22 @@ def createAsrticle():
 
 @app.route("/articles/<articleID>", methods=["PUT"])
 def updateArticle(articleID):
+   global articles
    if not articleID in articles:
       return getResponse(404,message="Articles with id {} doesn't exist".format(articleID))
-   global article
-   article = articles[articleID]
-   if request.data is not None:
-      articles[articleID] = request.data      
-
+   params = request.json
+   if "body" in params:
+      articles[articleID] = params["body"]
+   if "title" in params:
+      channel.basic_publish(
+         exchange="",
+         routing_key="updateArticle",
+         body=json.dumps({
+            "title": params["title"],
+            "articleID": articleID
+         })
+      )
+      print(params["title"]) 
    return getResponse(
       200,
       get="/articles/{}".format(articleID),
