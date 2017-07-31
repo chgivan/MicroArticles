@@ -1,33 +1,39 @@
 #Users BackEnd
-import pika, json
+from pony import orm
 from flask import Flask, jsonify, request
 app = Flask(__name__)
-connection = pika.BlockingConnection(pika.ConnectionParameters('192.168.99.100'))
-channel = connection.channel()
-channel.queue_declare(queue="createUser")
 
 users = {
     "0":{"username":"testtestopoulos", "password":"2323g4ffeddf"},
     "1":{"username":"efkowekgfs", "password":"433424334"}
 }
 usersCount = 1
+db = orm.Database("sqlite", "tmp.sqlite", create_db=True)
+
+class User(db.Entity):
+    id = orm.PrimaryKey(int, auto=True)
+    username = orm.Required(str, unique=True)
+    password = orm.Required(str)
+
+db.generate_mapping(create_tables=True)
+orm.sql_debug(True)
 
 @app.route("/users/<userID>", methods=["GET"])
 def getUser(userID):
-    global users
-    if not userID in users:
+    try:
+        with orm.db_session():
+            user = User[userID]
+            return getResponse(
+                200,
+                username=user.username,
+                passwordLength=len(user.password),
+                get="/users/{}".format(userID)
+            )
+    except orm.core.ObjectNotFound:
         return getResponse(404, message="User id {} doesn't exist".format(userID))
-    user = users[userID]
-    return getResponse(
-        200,
-        username=user["username"],
-        passwordLength=len(user["password"]),
-        update="/users/{}".format(userID)
-    )
 
 @app.route("/users", methods=["POST"])
 def createUser():
-    global usersCount, users
     errorFlag = False
     errorMsg = ""
     params = request.json
@@ -39,50 +45,59 @@ def createUser():
         errorFlag = True
     if errorFlag:
         return getResponse(400, message=error)
-    for userID, user in users.items():
-        if user["username"] ==  params["username"]:
-            return getResponse(
-                400,
-                message="username {} already exists! ".format(params["username"])
-            )
-    usersCount += 1
-    users[str(usersCount)] = {
-        "username":params["username"],
-        "password":params["password"]
-    }
 
-    channel.basic_publish(
-        exchange='',
-        routing_key='createUser',
-        body=json.dumps({
-            "userID":str(usersCount),
-            "username":params["username"]
-        }
-    ))
+    userID = None
+    try:
+        with orm.db_session:
+            user = User(
+                username=params["username"],
+                password=params["password"]
+            )
+            orm.commit()
+            userID = user.id
+    except orm.core.TransactionIntegrityError:
+        return getResponse(400, message="User with username {} already exist!".format(params["username"]))
 
     return getResponse(
         201,
-        get="/users/{}".format(usersCount),
-        update="/users/{}".format(usersCount)
+        get="/users/{}".format(userID)
     )
 
 @app.route("/users/<userID>", methods=["PUT"])
 def updateUser(userID):
-    global users
-    if not userID in users:
-        return getResponse(404, message="User id {} doesn't exist".format(userID))
-    user = users[userID]
     params = request.json
-    if "password" in params:
-        user["password"] = params["password"]
-    users[userID] = user
+    if not "password" in params:
+        return getResponse(400, message="No password given!!") 
 
-    return getResponse(
-        200,
-        get="/users/{}".format(userID),
-        message="Updated data of user with id {}".format(userID)
-    )
-    
+    try:
+        with orm.db_session:
+            user = User[userID]
+            user.password = params["password"]
+            return getResponse(
+                200,
+                get="/users/{}".format(userID),
+                message="Updated data of user with id {}".format(userID)
+            )
+    except orm.core.ObjectNotFound:
+        return getResponse(
+            404,
+            message="User ID {} doesn't exist!".format(userID)
+        )
+
+@app.route("/list/users", methods=["POST"])
+def listUser():
+    results = {}
+    with orm.db_session:
+        select_sql = 'SELECT username, id FROM User WHERE id IN(6,7,9)'
+        r = User.select_by_sql(select_sql)[:]
+        print (str(r))
+    for userID in request.json:
+        if userID in users:
+            results[userID] = users[userID]["username"]
+    resp = jsonify(results)
+    resp.status_code = 200
+    return resp
+
 def getResponse(status, **kwargs):
     obj = {}
     if kwargs is not None:
@@ -92,4 +107,5 @@ def getResponse(status, **kwargs):
     return resp
 
 if __name__=='__main__':
+    print("Starting User BackEnd")
     app.run(debug=True, port=5002)

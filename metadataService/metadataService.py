@@ -11,7 +11,6 @@ connection = pika.BlockingConnection(pika.ConnectionParameters('192.168.99.100')
 channel = connection.channel()
 channel.queue_declare(queue="createArticle")
 channel.queue_declare(queue="updateArticle")
-channel.queue_declare(queue="createUser")
 internal_lock = threading.Lock()
 
 #Message Bus communications
@@ -24,6 +23,7 @@ def OnArticleCreated(ch, method, prop, body):
         pipe.hset(id, "views", 0)
         pipe.hset(id, "likes", 0)
         pipe.hset(id, "dislikes", 0)
+        pipe.hset(id, "lastModifiedTimestamp", obj["timestamp"])
         r = pipe.execute()
 
 def OnArticleUpdated(ch, method, prop, body):
@@ -31,16 +31,10 @@ def OnArticleUpdated(ch, method, prop, body):
     id = obj['articleID']
     with redisDB.pipeline() as pipe:
         pipe.hset(id, "title", obj['title'])
+        pipe.hset(id, "lastModifiedTimestamp", obj["timestamp"])
         r = pipe.execute()
     print(obj['title'])    
 
-
-def OnUserCreated(ch, method, prop, body):
-    obj = json.loads(body)
-    userID = obj["userID"]
-    with redisDB.pipeline() as pipe:
-        pipe.hset(userID, "username", obj["username"])
-        r = pipe.execute()
 
 def _process_data_events():
     channel.basic_consume(OnArticleCreated, queue='createArticle', no_ack=True)
@@ -73,10 +67,10 @@ def getArticleMetadata(articleID):
     pipe.hget(articleID, "likes")
     pipe.hget(articleID, "dislikes")
     pipe.hget(articleID, "authorID")
+    pipe.hget(articleID, "lastModifiedTimestamp")
     pipe.hincrby(articleID, "views", 1)
     rList = pipe.execute()
     userID = rList[4].decode("utf-8")
-    username = redisDB.hget(userID, "username").decode("utf-8")
     return getResponse(
         200,
         title=rList[0].decode("utf-8"),
@@ -85,7 +79,7 @@ def getArticleMetadata(articleID):
         dislikes=int(rList[3]),
         get_author="/users/{}".format(userID),
         get="/articles/{}".format(articleID),
-        authorUsername=username
+        lastModified=rList[5].decode("utf-8")
     )  
 
 #Utils Functions

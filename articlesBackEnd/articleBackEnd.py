@@ -1,7 +1,7 @@
 #Article BackEnd
 from flask import Flask, jsonify, request
 from uuid import uuid4
-import pika, json
+import pika, json, time
 
 app = Flask(__name__)
 connection = pika.BlockingConnection(pika.ConnectionParameters('192.168.99.100'))
@@ -29,7 +29,8 @@ def createAsrticle():
    sendObj = {
       "articleID":id,
       "title":data["title"],
-      "authorID":data["authorID"]
+      "authorID":data["authorID"],
+      "timestamp":time.strftime("%d/%m/%y-%H:%M")
    }
 
    channel.basic_publish(
@@ -59,7 +60,8 @@ def updateArticle(articleID):
          routing_key="updateArticle",
          body=json.dumps({
             "title": params["title"],
-            "articleID": articleID
+            "articleID": articleID,
+            "timestamp":time.strftime("%d/%m/%y-%H:%M")
          })
       )
       print(params["title"]) 
