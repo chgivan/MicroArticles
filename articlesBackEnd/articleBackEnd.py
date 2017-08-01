@@ -1,75 +1,65 @@
 #Article BackEnd
 from flask import Flask, jsonify, request
 from uuid import uuid4
-import pika, json, time
+from pymongo import MongoClient
+from bson.objectid import ObjectId
 
+clientDB = MongoClient('mongodb://192.168.99.100:27017')
+db = clientDB["articles"]
+articles = db["articles-collection"]
 app = Flask(__name__)
-connection = pika.BlockingConnection(pika.ConnectionParameters('192.168.99.100'))
-channel = connection.channel()
-channel.queue_declare(queue="createArticle")
 
-articles = {
-    "ag3egfd":"agjiejisjijsdigjsidgsdgjsg",
-    "24rfe":"agokwoeggkj0g3k0g",
-    "g33r":"t03gkekg03gk303"
-}
 
 @app.route("/articles/<articleID>")
 def getArticle(articleID):
-   if not articleID in articles:
+   article = articles.find_one({'_id': ObjectId(articleID)})
+   if article is None:
       return getResponse(404,message="Articles with id {} doesn't exist".format(articleID))
-   return articles[articleID]
+   return getResponse(
+      200,
+      title=article["title"],
+      body=article["body"]
+   )
 
 @app.route("/articles", methods=["POST"])
 def createAsrticle():
-   global articles
-   id = str(uuid4())
-   data = request.get_json()
-   articles[id] = data["body"]
-   sendObj = {
-      "articleID":id,
-      "title":data["title"],
-      "authorID":data["authorID"],
-      "timestamp":time.strftime("%d/%m/%y-%H:%M")
-   }
+   params = request.get_json()
+   errFlag = False
+   errMsg = ""
+   if not "title" in params:
+      errFlag = True
+      errMsg += "Missing field title"
+   if not "body" in params:
+      errFlag = True
+      errMsg += "Missing field body"
+   if errFlag:
+      return getResponse(400, message=errMsg)
 
-   channel.basic_publish(
-      exchange='',
-      routing_key='createArticle',
-      body=json.dumps(sendObj)
-   )
-   
-   
+   newArticle = {
+      "title": params["title"],
+      "body": params["body"]
+   }
+   articleID = articles.insert_one(newArticle).inserted_id
+
    return getResponse(
       201,
-      get="/articles/{}".format(id),
-      metadata="/articles/{}/metadata".format(id)
+      get="/articles/{}".format(str(articleID)),
    )
 
 @app.route("/articles/<articleID>", methods=["PUT"])
 def updateArticle(articleID):
-   global articles
-   if not articleID in articles:
-      return getResponse(404,message="Articles with id {} doesn't exist".format(articleID))
-   params = request.json
+   params = request.get_json()
+   updateObj = {}
    if "body" in params:
-      articles[articleID] = params["body"]
+      updateObj["body"] = params["body"]
    if "title" in params:
-      channel.basic_publish(
-         exchange="",
-         routing_key="updateArticle",
-         body=json.dumps({
-            "title": params["title"],
-            "articleID": articleID,
-            "timestamp":time.strftime("%d/%m/%y-%H:%M")
-         })
-      )
-      print(params["title"]) 
+      updateObj["title"] = params["title"]
+   articles.update({'_id': ObjectId(articleID)},{"$set":updateObj})
    return getResponse(
       200,
-      get="/articles/{}".format(articleID),
+      get="/articles/{}".format(str(articleID)),
    )
-   
+
 
 def getResponse(status, **kwargs):
     obj = {}

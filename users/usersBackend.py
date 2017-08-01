@@ -85,15 +85,20 @@ def updateUser(userID):
         )
 
 @app.route("/list/users", methods=["POST"])
-def listUser():
+def listUsers():
     results = {}
+    idList = ""
+    for userID in request.json:
+        idList += "{},".format(userID)
+    if idList[-1] == ',':
+        idList = idList[:-1]
     with orm.db_session:
-        select_sql = 'SELECT username, id FROM User WHERE id IN(6,7,9)'
+        select_sql = 'SELECT username, id FROM User WHERE id IN({})'.format(idList)
+        print(select_sql)
         r = User.select_by_sql(select_sql)[:]
         print (str(r))
-    for userID in request.json:
-        if userID in users:
-            results[userID] = users[userID]["username"]
+        for user in r:
+            results[user.id] = user.username
     resp = jsonify(results)
     resp.status_code = 200
     return resp
