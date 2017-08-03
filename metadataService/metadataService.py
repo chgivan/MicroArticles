@@ -2,8 +2,10 @@
 from flask import Flask, jsonify, request
 from pymongo import MongoClient
 from bson.objectid import ObjectId
+from redis
 
 #globals
+redisDB = redis.StrictRedis(host='192.168.99.100', port=6379, db=3)
 clientDB = MongoClient('mongodb://192.168.99.100:27017')
 db = clientDB["metadata"]
 articlesMetadata = db["articles-metadata-collection"]

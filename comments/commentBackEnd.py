@@ -18,7 +18,8 @@ def listComments(articleID):
     for comment in commentList:
         resultList.append({
             "body": comment["body"],
-            "get":"/articles/{}/comments/{}".format(articleID, str(comment["_id"]))
+            "get":"/articles/{}/comments/{}".format(articleID, str(comment["_id"])),
+            "owner": comment["owner"]
         })
     return getResponseList(200, resultList)
 
@@ -53,7 +54,8 @@ def createComment(articleID):
 
     return getResponse(
         201,
-        get="/articles/{}/comments/{}".format(articleID, str(commentID))
+        get="/articles/{}/comments/{}".format(articleID, str(commentID)),
+        id=commentID
     )
 
 

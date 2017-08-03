@@ -1,26 +1,48 @@
 #Article BackEnd
 from flask import Flask, jsonify, request
 from uuid import uuid4
-from pymongo import MongoClient
+import pymongo
 from bson.objectid import ObjectId
 from authClient import AuthClient
 
-clientDB = MongoClient('mongodb://192.168.99.100:27017')
+clientDB = pymongo.MongoClient('mongodb://192.168.99.100:27017')
 db = clientDB["articles"]
 articles = db["articles-collection"]
 app = Flask(__name__)
 authClient = AuthClient(host="192.168.99.100")
+
+@app.route("/search", methods=["GET"])
+def listArticle():
+    params = request.args
+    limit = params.get(key="limit",default=5,type=int)
+    owner = params.get(key="owner",default=None,type=int)
+    results = []
+    query = {}
+    if not owner is None:
+        query["owner"] = owner
+    for article in articles.find(query).limit(limit).sort('views',pymongo.DESCENDING):
+        results.append({
+            "id":str(article["_id"]),
+            "title":article["title"],
+            "owner":article["owner"],
+            "views":article["views"]
+        })
+    resp = jsonify(results)
+    resp.status_code = 200
+    return resp
 
 @app.route("/articles/<articleID>")
 def getArticle(articleID):
    article = articles.find_one({'_id': ObjectId(articleID)})
    if article is None:
       return getResponse(404,message="Articles with id {} doesn't exist".format(articleID))
+   articles.update({'_id': ObjectId(articleID)},{"$inc":{"views":1}})
    return getResponse(
       200,
       title=article["title"],
       body=article["body"],
-      owner=article["owner"]
+      owner=article["owner"],
+      views=article["views"] + 1
    )
 
 @app.route("/articles", methods=["POST"])
@@ -51,7 +73,8 @@ def createAsrticle():
    newArticle = {
       "title": params["title"],
       "body": params["body"],
-      "owner": params["userID"]
+      "owner": params["userID"],
+      "views": 0
    }
    articleID = articles.insert_one(newArticle).inserted_id
 

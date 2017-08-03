@@ -30,7 +30,6 @@ class AuthClient(object):
         data = json.loads(body)
         if data is not None:
             self.tokens[data["id"]] = data["token"]
-        print(self.tokens)
 
     def isTokenValid(self, token, userID):
         if not userID in self.tokens:
