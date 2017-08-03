@@ -35,15 +35,17 @@ def login():
                 if user.password == params["password"]
                 and user.username == params["username"]
             ).first()
+            if user is None:
+                return getResponse(404, message="Wrong username or password")
             global tokens
             token = str(uuid.uuid4())
-            tokens[token] = user.id
+            tokens[str(user.id)] = token
             channelMQ.basic_publish(
                 exchange='auth',
                 routing_key='',
-                body=json.dumps({"id":user.id,"token":token})
+                body=json.dumps({"id":str(user.id),"token":token})
             )
-            return getResponse(200, userID = user.id, token=token)
+            return getResponse(200, userID = str(user.id), token=token)
     except orm.core.ObjectNotFound:
         return getResponse(404, message="Wrong username or password")
 
@@ -87,6 +89,7 @@ def createUser():
 
     return getResponse(
         201,
+        userID=userID,
         get="/users/{}".format(userID)
     )
 
@@ -137,9 +140,9 @@ def listUsers():
 
 def validToken(token, userID):
     global tokens
-    if not token in tokens:
+    if not userID in tokens:
         return False
-    return int(tokens[token]) == int(userID)
+    return tokens[userID] == token
 
 def validParams(params):
     errorFlag = False

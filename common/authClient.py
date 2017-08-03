@@ -29,17 +29,14 @@ class AuthClient(object):
     def _on_response(self, ch, method, props, body):
         data = json.loads(body)
         if data is not None:
-            self.tokens[data["token"]] = data["id"]
+            self.tokens[data["id"]] = data["token"]
         print(self.tokens)
 
     def isTokenValid(self, token, userID):
-        if not token in self.tokens:
+        if not userID in self.tokens:
             return False
-        return int(self.tokens[token]) == int(userID)
+        return self.tokens[userID] == token
 
     def close():
         self.connection.close()
 
-authClient = AuthClient(host="192.168.99.100")
-while True:
-    sleep(0.1)
