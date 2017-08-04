@@ -10,7 +10,18 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-
+  articles:
+    build: articles
+    image: chgivan/micro/articles:latest
+    deploy:
+      restart_policy:
+        condition: on-failure
+    environment:
+      - RABBITMQ=rabbitmq
+      - DB_HOST=mongodb
+    networks:
+      - front-net
+      - back-net
   users:
     build: users
     image: chgivan/micro/users:latest
@@ -38,14 +49,10 @@ services:
     image: "rabbitmq"
     networks:
       - back-net
-  # redis:
-    # image: "redis"
-    # ports:
-  #     - "6379:6379"
-  # mongod:
-  #   image: "mongo"
-  #   ports:
-  #     - "27017:27017"
+  mongodb:
+    image: "mongo"
+    networks:
+      - back-net
 networks:
   front-net:
   back-net:

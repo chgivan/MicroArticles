@@ -3,13 +3,18 @@ from flask import Flask, jsonify, request
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from authClient import AuthClient
-import pprint
+from os import environ
 
-clientDB = MongoClient('mongodb://192.168.99.100:27017')
+rabbitmq = environ.get("RABBITMQ")
+db_host = environ.get("DB_HOST")
+port = int(environ.get("PORT"))
+debug = bool(environ.get("DEBUG"))
+
+clientDB = MongoClient('mongodb://{}:27017'.format(db_host))
 db = clientDB["comments"]
 comments = db["comments-collection"]
 app = Flask(__name__)
-authClient = AuthClient(host="192.168.99.100")
+authClient = AuthClient(host=rabbitmq)
 
 @app.route("/articles/<articleID>/comments", methods=["GET"])
 def listComments(articleID):
@@ -101,4 +106,4 @@ def getResponse(status, **kwargs):
     return resp 
 
 if __name__=='__main__':
-    app.run(debug=True, port=5003)
+    app.run(host="0.0.0.0", debug=debug, port=port)

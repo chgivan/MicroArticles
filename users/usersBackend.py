@@ -23,7 +23,7 @@ db.bind(
     database=dbase
 )
 connMQ = pika.BlockingConnection(
-    pika.ConnectionParameters(host=rabbitmq)
+    pika.ConnectionParameters(host=rabbitmq, heartbeat_interval=30)
 )
 channelMQ = connMQ.channel()
 channelMQ.exchange_declare(exchange='auth', type='fanout')

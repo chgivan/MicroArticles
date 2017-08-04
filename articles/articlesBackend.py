@@ -4,12 +4,18 @@ from uuid import uuid4
 import pymongo
 from bson.objectid import ObjectId
 from authClient import AuthClient
+from os import environ
 
-clientDB = pymongo.MongoClient('mongodb://192.168.99.100:27017')
+rabbitmq = environ.get("RABBITMQ")
+db_host = environ.get("DB_HOST")
+debug = bool(environ.get("DEBUG",False))
+port = int(environ.get("PORT",5000))
+
+clientDB = pymongo.MongoClient('mongodb://{}:27017'.format(db_host))
 db = clientDB["articles"]
 articles = db["articles-collection"]
 app = Flask(__name__)
-authClient = AuthClient(host="192.168.99.100")
+authClient = AuthClient(host=rabbitmq)
 
 @app.route("/search", methods=["GET"])
 def listArticle():
@@ -118,4 +124,4 @@ def getResponse(status, **kwargs):
     return resp
 
 if __name__=='__main__':
-   app.run(debug=True, port=5000)
+   app.run(host="0.0.0.0", debug=debug, port=port)
