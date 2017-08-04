@@ -3,11 +3,27 @@ from pony import orm
 from flask import Flask, jsonify, request
 import pika
 import uuid, json
+from os import environ
+
+rabbitmq = environ.get("RABBITMQ")
+port = int(environ.get("PORT", 5000))
+debug = bool(environ.get("DEBUG", False))
+dbhost = environ.get("DB_HOST")
+dbuser = environ.get("DB_USER")
+dbpassword = environ.get("DB_PASSWORD")
+dbase = environ.get("DB_DATABASE")
 
 app = Flask(__name__)
-db = orm.Database("sqlite", "tmp.sqlite", create_db=True)
+db = orm.Database()
+db.bind(
+    provider='postgres',
+    user=dbuser,
+    password=dbpassword,
+    host=dbhost,
+    database=dbase
+)
 connMQ = pika.BlockingConnection(
-    pika.ConnectionParameters(host="192.168.99.100")
+    pika.ConnectionParameters(host=rabbitmq)
 )
 channelMQ = connMQ.channel()
 channelMQ.exchange_declare(exchange='auth', type='fanout')
@@ -164,5 +180,4 @@ def getResponse(status, **kwargs):
     return resp
 
 if __name__=='__main__':
-    print("Starting User BackEnd")
-    app.run(debug=True, port=5002)
+    app.run(host="0.0.0.0", debug=debug, port=port)

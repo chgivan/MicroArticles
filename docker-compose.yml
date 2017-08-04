@@ -1,14 +1,51 @@
 version: '3'
 services:
+  gateway:
+    build: gateway
+    image: chgivan/micro/gateway:latest
+    ports:
+      - "80:80"
+    networks:
+      - front-net
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+  users:
+    build: users
+    image: chgivan/micro/users:latest
+    deploy:
+      restart_policy:
+        condition: on-failure
+    environment:
+      - RABBITMQ=rabbitmq
+      - DB_HOST=userdb
+      - DB_PASSWORD=123456
+      - DB_DATABASE=usersDB
+      - DB_USER=my_user
+    networks:
+      - front-net
+      - back-net
+  userdb:
+    image: postgres
+    environment:
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_USER=my_user
+      - POSTGRES_DB=usersDB
+    networks:
+      - back-net
   rabbitmq:
     image: "rabbitmq"
-    ports:
-      - "5672:5672"
-  redis:
-    image: "redis"
-    ports:
-      - "6379:6379"
-  mongod:
-    image: "mongo"
-    ports:
-      - "27017:27017"
+    networks:
+      - back-net
+  # redis:
+    # image: "redis"
+    # ports:
+  #     - "6379:6379"
+  # mongod:
+  #   image: "mongo"
+  #   ports:
+  #     - "27017:27017"
+networks:
+  front-net:
+  back-net:
