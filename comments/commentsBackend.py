@@ -7,8 +7,8 @@ from os import environ
 
 rabbitmq = environ.get("RABBITMQ")
 db_host = environ.get("DB_HOST")
-port = int(environ.get("PORT"))
-debug = bool(environ.get("DEBUG"))
+port = int(environ.get("PORT",5000))
+debug = bool(environ.get("DEBUG",False))
 
 clientDB = MongoClient('mongodb://{}:27017'.format(db_host))
 db = clientDB["comments"]
@@ -60,7 +60,7 @@ def createComment(articleID):
     return getResponse(
         201,
         get="/articles/{}/comments/{}".format(articleID, str(commentID)),
-        id=commentID
+        id=str(commentID)
     )
 
 

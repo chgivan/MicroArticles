@@ -10,6 +10,18 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  comments:
+    build: comments
+    image: chgivan/micro/comment
+    deploy:
+      restart_policy:
+        condition: on-failure
+    environment:
+      - RABBITMQ=rabbitmq
+      - DB_HOST=mongodb
+    networks:
+      - front-net
+      - back-net
   articles:
     build: articles
     image: chgivan/micro/articles:latest
