@@ -4,15 +4,19 @@ import Vue from 'vue'
 import App from './App'
 import VueRouter from 'vue-router'
 import vueResource from 'vue-resource'
+import VueGlobal from 'vue-global'
 
 import Articles from './components/Articles'
 import Article from './components/Article'
 import EditArticle from './components/EditArticle'
+import EditUser from './components/EditUser'
+import Login from './components/Login'
 
 Vue.config.productionTip = false
 
 Vue.use(vueResource)
 Vue.use(VueRouter)
+Vue.use(VueGlobal)
 
 const router = new VueRouter({
     mode:'history',
@@ -20,13 +24,18 @@ const router = new VueRouter({
     routes: [
         {path:'/', component: Articles},
         {path:'/article', component: Article},
-        {path:'/article-edit', component: EditArticle}
+        {path:'/article-edit', component: EditArticle},
+        {path:'/profile-edit', component: EditUser},
+        {path:'/login', component: Login}
     ]
 })
 
 /* eslint-disable no-new */
 new Vue({
     router,
+    data:{
+        user:{username:'', token:'', isLogin:false}
+    },
     template: `
 <div id="app">
  <nav class="navbar navbar-default">
@@ -38,13 +47,27 @@ new Vue({
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#">Micro Articles</a>
+          <router-link class="navbar-brand" to="/">Micro Articles</router-link>
         </div>
         <div id="navbar" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-           <li><router-link to="/">Home</router-link></li>
-           <li><router-link to="/article">Simple Article</router-link></li>
           </ul>
+          <ul class="nav navbar-nav navbar-right">
+           <li><router-link to="/article-edit">
+               <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+                Write Article
+           </router-link></li>
+           <li v-if="user.isLogin"><router-link to="/profile-edit">
+               <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
+                  Profile
+           </router-link></li>
+           <li v-else="user.isLogin"><router-link to="/login">
+               <span class="glyphicon glyphicon-user" aria-hidden="true"></span>
+                  Login
+           </router-link></li>
+
+          </ul>
+
         </div><!--/.nav-collapse -->
       </div>
     </nav>

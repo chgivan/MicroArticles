@@ -6,12 +6,16 @@
      <th>Title</th>
      <th>Views</th>
      <th>Author</th>
+     <th>Visit Article</th>
     </tr></thead>
     <tbody>
      <tr v-for="article in articles">
-      <td>{{article.title}}</td>
+         <td><h2>{{article.title}}</h2></td>
       <td>{{article.views}}</td>
       <td>{{article.ownerName}}</td>
+      <td>
+          <router-link class="btn btn-primary" to="/article">Visit</router-link>
+      </td>
      </tr>
     </tbody>
    </table>
@@ -43,5 +47,7 @@ export default {
 </script>
 
 <style scoped>
-
+ td{
+     text-aling: center;
+ }
 </style>
