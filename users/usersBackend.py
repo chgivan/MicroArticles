@@ -5,7 +5,7 @@ import pika
 import uuid, json
 from os import environ
 
-rabbitmq = environ.get("RABBITMQ")
+# rabbitmq = environ.get("RABBITMQ")
 port = int(environ.get("PORT", 5000))
 debug = bool(environ.get("DEBUG", False))
 dbhost = environ.get("DB_HOST")
@@ -22,11 +22,11 @@ db.bind(
     host=dbhost,
     database=dbase
 )
-connMQ = pika.BlockingConnection(
-    pika.ConnectionParameters(host=rabbitmq, heartbeat_interval=30)
-)
-channelMQ = connMQ.channel()
-channelMQ.exchange_declare(exchange='auth', type='fanout')
+# connMQ = pika.BlockingConnection(
+#     pika.ConnectionParameters(host=rabbitmq, heartbeat_interval=30)
+# )
+# channelMQ = connMQ.channel()
+# channelMQ.exchange_declare(exchange='auth', type='fanout')
 
 tokens = {}
 class User(db.Entity):
@@ -56,11 +56,11 @@ def login():
             global tokens
             token = str(uuid.uuid4())
             tokens[str(user.id)] = token
-            channelMQ.basic_publish(
-                exchange='auth',
-                routing_key='',
-                body=json.dumps({"id":str(user.id),"token":token})
-            )
+            # channelMQ.basic_publish(
+            #     exchange='auth',
+            #     routing_key='',
+            #     body=json.dumps({"id":str(user.id),"token":token})
+            # )
             return getResponse(200, userID = str(user.id), token=token)
     except orm.core.ObjectNotFound:
         return getResponse(404, message="Wrong username or password")
@@ -153,6 +153,24 @@ def listUsers():
     resp = jsonify(results)
     resp.status_code = 200
     return resp
+
+@app.route("/users/<userID>/isValidToken", methods=["POST"])
+def isValidToken(userID):
+    data = request.get_json(force=True, silent=True)
+    if data is None:
+        return getResponse(400, message="Fail to readed json data")
+    errFlag = False
+    errMsg = ''
+    if not "token" in data:
+        errFlag = True
+        errMsg += "Missing field token"
+    if errFlag:
+        return getResponse(400, message=errMsg)
+
+    return getResponse(
+        200,
+        isValid=validToken(token=data["token"],userID=userID)
+    )
 
 def validToken(token, userID):
     global tokens
