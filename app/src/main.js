@@ -23,8 +23,9 @@ const router = new VueRouter({
     base: __dirname,
     routes: [
         {path:'/', component: Articles},
-        {path:'/article', component: Article},
-        {path:'/article-edit', component: EditArticle},
+        {path:'/articles/:id', component: Article},
+        // {path:'/article-edit', component: EditArticle},
+        {path:'/article-edit/:id', component: EditArticle},
         {path:'/profile-edit', component: EditUser},
         {path:'/login', component: Login}
     ]
@@ -53,7 +54,7 @@ new Vue({
           <ul class="nav navbar-nav">
           </ul>
           <ul class="nav navbar-nav navbar-right">
-           <li><router-link to="/article-edit">
+           <li><router-link to="/article-edit/-1">
                <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
                 Write Article
            </router-link></li>

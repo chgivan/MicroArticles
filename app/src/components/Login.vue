@@ -40,6 +40,7 @@
 import Alert from './Alert';
 export default {
   name: 'login',
+  global:['user'],
   components:{
       Alert
   },
@@ -54,6 +55,14 @@ export default {
   methods:{
       submit(e){
           e.preventDefault();
+          if (this.register){
+
+          }else{
+            this.user.username = this.username
+            this.user.token="344334324"
+            this.user.isLogin=true
+            this.$router.push('/')
+          }
       },
       clear(){
           this.username = '';

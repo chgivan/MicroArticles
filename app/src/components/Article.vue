@@ -36,6 +36,7 @@ export default {
              views: 10023,
              authorName: "Testopoulos"
          }
+         console.log(this.$route.params.id)
      }
  }
 </script>

@@ -14,7 +14,7 @@
       <td>{{article.views}}</td>
       <td>{{article.ownerName}}</td>
       <td>
-          <router-link class="btn btn-primary" to="/article">Visit</router-link>
+          <router-link class="btn btn-primary" :to="article.link">Visit</router-link>
       </td>
      </tr>
     </tbody>
@@ -37,11 +37,10 @@ export default {
   },
   created: function(){
    this.articles = [
-    {title: "Hello News", views:30, ownerName: "Testopoulos"},
-    {title: "Big Bang!", views:15, ownerName: "Makis"},
-    {title: "Fake news", views:9, ownerName: "Giorgos"}
+    {title: "Hello News", views:30, ownerName: "Testopoulos",link:"articles/1"},
+    {title: "Big Bang!", views:15, ownerName: "Makis", link:"articles/2"},
+    {title: "Fake news", views:9, ownerName: "Giorgos", link:"articles/3"}
    ]
-   console.log("Test")
   }
 }
 </script>

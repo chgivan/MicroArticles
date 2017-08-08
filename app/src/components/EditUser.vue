@@ -36,12 +36,12 @@
 import Alert from './Alert';
 export default {
   name: 'login',
+  global: ["user"],
   components:{
       Alert
   },
   data () {
       return {
-          user:{username:"Test Testopoulos"},
           password1:'',
           password2:''
       }
