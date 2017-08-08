@@ -3,10 +3,10 @@ from flask import Flask, jsonify, request
 from uuid import uuid4
 import pymongo
 from bson.objectid import ObjectId
-from authClient import AuthClient
 from os import environ
+import requests
 
-rabbitmq = environ.get("RABBITMQ")
+users_host = environ.get("USERS_HOST")
 db_host = environ.get("DB_HOST")
 debug = bool(environ.get("DEBUG",False))
 port = int(environ.get("PORT",5000))
@@ -15,7 +15,6 @@ clientDB = pymongo.MongoClient('mongodb://{}:27017'.format(db_host))
 db = clientDB["articles"]
 articles = db["articles-collection"]
 app = Flask(__name__)
-authClient = AuthClient(host=rabbitmq)
 
 @app.route("/search", methods=["GET"])
 def listArticle():
@@ -73,7 +72,7 @@ def createAsrticle():
    if errFlag:
       return getResponse(400, message=errMsg)
 
-   if not authClient.isTokenValid(token=params["token"],userID=params["userID"]):
+   if not isValidToken(token=params["token"],userID=params["userID"]):
       return getResponse(403, message="Access Denied!!")
 
    newArticle = {
@@ -105,7 +104,7 @@ def updateArticle(articleID):
    article = articles.find_one({'_id': ObjectId(articleID)})
    if article is None:
       return getResponse(404,message="Articles with id {} doesn't exist".format(articleID))
-   if not authClient.isTokenValid(token=params["token"],userID=article["owner"]):
+   if not isValidToken(token=params["token"],userID=article["owner"]):
       return getResponse(403, message="Access Denied!!")
 
    articles.update({'_id': ObjectId(articleID)},{"$set":updateObj})
@@ -114,6 +113,12 @@ def updateArticle(articleID):
       get="/articles/{}".format(str(articleID)),
    )
 
+def isValidToken(userID, token):
+    url = "http://{}/users/{}/isValidToken".format(users_host,userID)
+    r = requests.post(url, json = {'token':token})
+    if r.status_code != 200:
+        return False
+    return r.json()["isValid"]
 
 def getResponse(status, **kwargs):
     obj = {}

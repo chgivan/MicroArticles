@@ -1,4 +1,3 @@
 Flask
-pika
 pony
 psycopg2 

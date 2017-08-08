@@ -18,7 +18,7 @@ services:
       restart_policy:
         condition: on-failure
     environment:
-      - RABBITMQ=rabbitmq
+      - USERS_HOST=users:5000
       - DB_HOST=mongodb
     networks:
       - front-net
@@ -30,7 +30,7 @@ services:
       restart_policy:
         condition: on-failure
     environment:
-      - RABBITMQ=rabbitmq
+      - USERS_HOST=users:5000
       - DB_HOST=mongodb
     networks:
       - front-net
@@ -42,7 +42,6 @@ services:
       restart_policy:
         condition: on-failure
     environment:
-      - RABBITMQ=rabbitmq
       - DB_HOST=userdb
       - DB_PASSWORD=123456
       - DB_DATABASE=usersDB
@@ -56,10 +55,6 @@ services:
       - POSTGRES_PASSWORD=123456
       - POSTGRES_USER=my_user
       - POSTGRES_DB=usersDB
-    networks:
-      - back-net
-  rabbitmq:
-    image: "rabbitmq"
     networks:
       - back-net
   mongodb:

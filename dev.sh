@@ -1,0 +1,6 @@
+alias dcb="docker-compose build"
+alias dsd="docker stack deploy -c docker-compose.yml app"
+alias dsp="docker stack ps app"
+alias dsr="docker stack rm app"
+alias dpa="docker ps -a | grep "
+alias dl="docker logs  "

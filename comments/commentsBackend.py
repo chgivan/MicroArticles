@@ -2,10 +2,10 @@
 from flask import Flask, jsonify, request
 from pymongo import MongoClient
 from bson.objectid import ObjectId
-from authClient import AuthClient
 from os import environ
+import requests
 
-rabbitmq = environ.get("RABBITMQ")
+users_host = environ.get("USERS_HOST")
 db_host = environ.get("DB_HOST")
 port = int(environ.get("PORT",5000))
 debug = bool(environ.get("DEBUG",False))
@@ -14,7 +14,6 @@ clientDB = MongoClient('mongodb://{}:27017'.format(db_host))
 db = clientDB["comments"]
 comments = db["comments-collection"]
 app = Flask(__name__)
-authClient = AuthClient(host=rabbitmq)
 
 @app.route("/articles/<articleID>/comments", methods=["GET"])
 def listComments(articleID):
@@ -47,7 +46,7 @@ def createComment(articleID):
     if errFlag:
         return getResponse(400, message=errMsg)
 
-    if not authClient.isTokenValid(token=params["token"],userID=params["userID"]):
+    if not isValidToken(token=params["token"],userID=params["userID"]):
       return getResponse(403, message="Access Denied!!")
 
     newComment = {
@@ -77,7 +76,7 @@ def updateComment(articleID, commentID):
     comment = comments.find_one({'_id': ObjectId(commentID)})
     if comment is None:
         return getResponse(404,message="Comment id {} isn't found".format(commentID))
-    if not authClient.isTokenValid(token=params["token"], userID=comment["owner"]):
+    if not isValidToken(token=params["token"], userID=comment["owner"]):
         return getResponse(403, message="Access Denied!!")
 
     updateObj = {}
@@ -89,6 +88,12 @@ def updateComment(articleID, commentID):
         get="/articles/{}/comments/{}".format(articleID, str(commentID))
     )
 
+def isValidToken(userID, token):
+    url = "http://{}/users/{}/isValidToken".format(users_host,userID)
+    r = requests.post(url, json = {'token':token})
+    if r.status_code != 200:
+        return False
+    return r.json()["isValid"]
 
 def getResponseList(status, aList):
     if aList is None:

@@ -1,11 +1,9 @@
 #Users BackEnd
 from pony import orm
 from flask import Flask, jsonify, request
-import pika
 import uuid, json
 from os import environ
 
-# rabbitmq = environ.get("RABBITMQ")
 port = int(environ.get("PORT", 5000))
 debug = bool(environ.get("DEBUG", False))
 dbhost = environ.get("DB_HOST")
@@ -22,11 +20,6 @@ db.bind(
     host=dbhost,
     database=dbase
 )
-# connMQ = pika.BlockingConnection(
-#     pika.ConnectionParameters(host=rabbitmq, heartbeat_interval=30)
-# )
-# channelMQ = connMQ.channel()
-# channelMQ.exchange_declare(exchange='auth', type='fanout')
 
 tokens = {}
 class User(db.Entity):
@@ -56,11 +49,6 @@ def login():
             global tokens
             token = str(uuid.uuid4())
             tokens[str(user.id)] = token
-            # channelMQ.basic_publish(
-            #     exchange='auth',
-            #     routing_key='',
-            #     body=json.dumps({"id":str(user.id),"token":token})
-            # )
             return getResponse(200, userID = str(user.id), token=token)
     except orm.core.ObjectNotFound:
         return getResponse(404, message="Wrong username or password")
@@ -135,22 +123,20 @@ def updateUser(userID):
             message="User ID {} doesn't exist!".format(userID)
         )
 
-@app.route("/list/users", methods=["POST"])
+@app.route("/users", methods=["GET"])
 def listUsers():
+    ids = request.args.get("ids",default=None)
+    if ids is None:
+        return getResponse(400, message="Missing ids parameter")
     results = {}
-    idList = ""
-    for userID in request.json:
-        idList += "{},".format(userID)
-    if idList[-1] == ',':
-        idList = idList[:-1]
+    for userID in ids.split(','):
+        results[userID] = "NULL"
     with orm.db_session:
-        select_sql = 'SELECT username, id FROM User WHERE id IN({})'.format(idList)
-        print(select_sql)
-        r = User.select_by_sql(select_sql)[:]
-        print (str(r))
-        for user in r:
-            results[user.id] = user.username
-    resp = jsonify(results)
+        for userID, username in orm.select((u.id, u.username) for u in User):
+            userID = str(userID)
+            if userID in results:
+                results[userID] = username
+    resp= jsonify(results)
     resp.status_code = 200
     return resp
 
