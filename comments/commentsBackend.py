@@ -23,7 +23,8 @@ def listComments(articleID):
         resultList.append({
             "body": comment["body"],
             "get":"/articles/{}/comments/{}".format(articleID, str(comment["_id"])),
-            "owner": comment["owner"]
+            "owner": comment["owner"],
+            "ownerID": comment["ownerID"]
         })
     return getResponseList(200, resultList)
 
@@ -47,12 +48,19 @@ def createComment(articleID):
         return getResponse(400, message=errMsg)
 
     if not isValidToken(token=params["token"],userID=params["userID"]):
-      return getResponse(403, message="Access Denied!!")
+        return getResponse(403, message="Access Denied!!")
+
+    r = requests.get(
+        "http://{}/users/{}".format(users_host,params["userID"])
+    )
+    if r.status_code != 200:
+        return getResponse(503, message="Users service not unvailable")
 
     newComment = {
         "body": params["body"],
         "articleID": ObjectId(articleID),
-        "owner": params["userID"]
+        "ownerID": params["userID"],
+        "owner":r.json()["username"]
     }
     commentID = comments.insert_one(newComment).inserted_id
 
@@ -76,7 +84,7 @@ def updateComment(articleID, commentID):
     comment = comments.find_one({'_id': ObjectId(commentID)})
     if comment is None:
         return getResponse(404,message="Comment id {} isn't found".format(commentID))
-    if not isValidToken(token=params["token"], userID=comment["owner"]):
+    if not isValidToken(token=params["token"], userID=comment["ownerID"]):
         return getResponse(403, message="Access Denied!!")
 
     updateObj = {}

@@ -55,18 +55,12 @@ def login():
 
 @app.route("/users/<userID>", methods=["GET"])
 def getUser(userID):
-    token = request.args.get('token')
-    if token is None:
-        return getResponse(400,message="Missing token!")
-    if not validToken(token=token, userID=userID):
-        return getResponse(403,message="Access Denied!!")
     try:
         with orm.db_session():
             user = User[userID]
             return getResponse(
                 200,
                 username=user.username,
-                passwordLength=len(user.password),
                 get="/users/{}".format(userID)
             )
     except orm.core.ObjectNotFound:
