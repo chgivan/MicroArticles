@@ -35,7 +35,8 @@ const router = new VueRouter({
 new Vue({
     router,
     data:{
-        user:{username:'', token:'', isLogin:false}
+        user: {id:-1, username:'', token:'', isLogin:false},
+        api: "http://192.168.99.100:8080",
     },
     template: `
 <div id="app">

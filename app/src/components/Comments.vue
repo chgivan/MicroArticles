@@ -4,7 +4,7 @@
             <div class="panel-body">
                 {{comment.body}}
             </div>
-            <div class="panel-footer">- {{comment.author}}</div>
+            <div class="panel-footer">- {{comment.owner}}</div>
         </div>
     </div>
 </template>
@@ -12,22 +12,28 @@
 <script>
 export default {
      name: 'comments',
-     props:[
-     ],
+     global:['api'],
      data () {
          return {
              comments:[]
          }
      },
-     created (){
-         this.comments = [
-             {author:"Testopoulos", body:"Any Questions?"},
-             {author:"Makis", body:"Good Job"},
-             {author:"Makis", body:"Nice work!"},
-             {author:"ComicsGuy", body:"Best article ever!!"},
-             {author:"YEa", body:"Bad"},
-             {author:"Hi", body:"Good Comment"},
-         ]
+     created: function(){
+         this.$http.get(
+             this.api + "/articles/"+this.$route.params.id+"/comments",
+         ).then(response =>{
+             var results = []
+             for (var i = 0; i < response.body.length; i++){
+                 var comment = response.body[i]
+                 results.push({
+                         body:comment.body,
+                         owner:comment.owner,
+                 })
+             }
+             this.comments = results
+         }, response => {
+             console.log(response.body);
+         });
      }
  }
 </script>

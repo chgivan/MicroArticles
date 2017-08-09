@@ -12,7 +12,7 @@
      <tr v-for="article in articles">
          <td><h2>{{article.title}}</h2></td>
       <td>{{article.views}}</td>
-      <td>{{article.ownerName}}</td>
+      <td>{{article.owner}}</td>
       <td>
           <router-link class="btn btn-primary" :to="article.link">Visit</router-link>
       </td>
@@ -24,25 +24,41 @@
 
 <script>
 export default {
-  name: 'articles',
-  data () {
-    return {
-     articles: []
-    }
-  },
-  methods: {
-   fetchArticles(){
-    alert("Fetching... Article")
-   }
-  },
-  created: function(){
-   this.articles = [
-    {title: "Hello News", views:30, ownerName: "Testopoulos",link:"articles/1"},
-    {title: "Big Bang!", views:15, ownerName: "Makis", link:"articles/2"},
-    {title: "Fake news", views:9, ownerName: "Giorgos", link:"articles/3"}
-   ]
-  }
-}
+     name: 'articles',
+     global:['api'],
+     data () {
+         return {
+             articles: []
+         }
+     },
+     methods: {
+         fetchArticles(){
+             this.$http.get(
+                 this.api + "/articles",
+             ).then(response =>{
+                 var results = []
+                 for (var i = 0; i < response.body.length; i++){
+                     var article = response.body[i]
+                     results.push({
+                         title:article.title,
+                         owner:article.owner,
+                         views:article.views,
+                         link:"/articles/"+article.id
+                     })
+                 }
+                 this.articles = results
+             }, response => {
+                 console.log(response.body);
+             });
+         }
+     },
+     created: function(){
+         this.fetchArticles();
+     },
+     updated: function(){
+         this.fetchArticles();
+     }
+ }
 </script>
 
 <style scoped>

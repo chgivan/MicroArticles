@@ -2,7 +2,7 @@
   <div class="container">
       <div class="page-header">
           <h1>{{article.title}}</h1>
-          <i>by {{article.authorName}}</i>
+          <i>by {{article.owner}}</i>
           <div class="pull-right">
               {{article.views}}
               <span class="glyphicon glyphicon-eye-open pull-right"></span>
@@ -20,6 +20,7 @@ import Comments from "./Comments"
 import EditComment from "./EditComment"
 export default {
      name: 'article',
+     global:['api'],
      components:{
          Comments,
          EditComment
@@ -29,15 +30,20 @@ export default {
              article:{}
          }
      },
-     created (){
-         this.article = {
-             title: "Test Article",
-             body: "<h2>This is a body</h2>",
-             views: 10023,
-             authorName: "Testopoulos"
+     methods:{
+         fetchArticle(){
+             this.$http.get(
+                 this.api + "/articles/"+this.$route.params.id,
+             ).then(response =>{
+                 this.article = response.body
+             }, response => {
+                 console.log(response.body);
+             });
          }
-         console.log(this.$route.params.id)
-     }
+     },
+     created: function(){
+          this.fetchArticle();
+     },
  }
 </script>
 
