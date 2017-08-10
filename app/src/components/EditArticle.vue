@@ -2,7 +2,7 @@
   <div class="container">
    <h1 v-if="editFlag" class="page-header">Edit Article</h1>
    <h1 v-else class="page-header">Create Article</h1>
-   <alert v-if="errFlag" :message="errMsg"></alert>
+   <alert v-if="errFlag" :messages="errMsg"></alert>
    <form v-on:submit="addArticle">
     <div class="well">
      <h4>Article Title</h4>
@@ -40,9 +40,10 @@ export default {
      components:{
          Alert
      },
+     global:['user', 'api'],
      data () {
          return {
-             newArticle: {},
+             newArticle: {title:'',body:''},
              errFlag: false,
              errMsg: [],
              editFlag: false,
@@ -52,6 +53,10 @@ export default {
      methods:{
          addArticle(e){
              e.preventDefault();
+             if(!this.user.isLogin){
+                 this.errFlag = true;
+                 this.errMsg.push("User must be login");
+             }
              if(!this.newArticle.title){
                  this.errFlag = true;
                  this.errMsg.push("Missing Title");
@@ -63,10 +68,21 @@ export default {
              if(this.errFlag){
                  return
              }
-             let postArticle = {
-                 title:newArticle.title,
-                 body:newArticle.body
+             var postArticle = {
+                 title:this.newArticle.title,
+                 body:this.newArticle.body,
+                 token:this.user.token,
+                 userID:this.user.id
              }
+             this.$http.post(
+                 this.api+"/articles",
+                 postArticle
+             ).then(response => {
+                 var article = response.body;
+                 this.$router.push('/articles/'+article.id)
+             }, response => {
+                 this.errMsg.push(response.body.message);
+             });
          }
      },
      created(){

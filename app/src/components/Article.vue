@@ -27,7 +27,8 @@ export default {
      },
      data () {
          return {
-             article:{}
+             article:{},
+             reloaded:false
          }
      },
      methods:{
@@ -43,7 +44,7 @@ export default {
      },
      created: function(){
           this.fetchArticle();
-     },
+     }
  }
 </script>
 

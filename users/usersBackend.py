@@ -87,7 +87,7 @@ def createUser():
 
     return getResponse(
         201,
-        userID=userID,
+        userID=str(userID),
         get="/users/{}".format(userID)
     )
 

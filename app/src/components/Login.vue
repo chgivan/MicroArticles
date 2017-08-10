@@ -32,8 +32,8 @@
                   <button type="button" @click="clear" class="btn btn-danger">Clear</button>
               </div>
           </form>
-          <alert :message="message"></alert>
       </div>
+      <alert :messages="messages"></alert>
   </div>
 </template>
 
@@ -51,25 +51,30 @@
              password1:'',
              password2:'',
              register:false,
-             message:''
+             messages:[]
          }
      },
      methods:{
          submit(e){
              e.preventDefault();
              if (this.register){
-                 this.$http.post(
-                     this.api+"/users",{
-                         "username":this.username,
-                         "password":this.password1
-                     }).then(response => {
-                         var user = response.body;
-                         this.user.username = this.username;
-                         this.user.token = user.token;
-                         this.message = "User Created";
-                     }, response => {
-                         this.message = response.body.message; 
-                     });
+                 if (this.password1 != this.password2){
+                     this.messages.push("Passswords field don't match");
+                 }else{
+                     this.$http.post(
+                         this.api+"/users",{
+                             "username":this.username,
+                             "password":this.password1
+                         }).then(response => {
+                             var user = response.body;
+                             this.user.username = this.username;
+                             this.user.id = user.userID;
+                             this.messages.push("User Created | Press login to enter");
+                             this.register = false
+                         }, response => {
+                             this.message = response.body.message; 
+                         });
+                 }
              }else{
                  this.$http.post(
                      this.api+"/login",{
@@ -78,6 +83,7 @@
                      }).then(response => {
                          var user = response.body;
                          this.user.username = this.username;
+                         this.user.id = user.userID;
                          this.user.token = user.token;
                          this.user.isLogin = true;
                          this.$router.push('/') 

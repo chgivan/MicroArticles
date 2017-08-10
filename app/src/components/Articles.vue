@@ -1,6 +1,7 @@
 <template>
   <div class="container">
    <h1 class="page-header">Articles</h1>
+   <alert :messages="messages"></alert>
    <table class="table table-striped">
     <thead><tr>
      <th>Title</th>
@@ -23,12 +24,17 @@
 </template>
 
 <script>
-export default {
+ import Alert from './Alert';
+ export default {
      name: 'articles',
      global:['api'],
+     components:{
+         Alert
+     },
      data () {
          return {
-             articles: []
+             articles: [],
+             messages: []
          }
      },
      methods: {
@@ -48,14 +54,14 @@ export default {
                  }
                  this.articles = results
              }, response => {
+                 if (response.status == 404){
+                     this.messages.push("No articles found!");
+                 }
                  console.log(response.body);
              });
          }
      },
      created: function(){
-         this.fetchArticles();
-     },
-     updated: function(){
          this.fetchArticles();
      }
  }

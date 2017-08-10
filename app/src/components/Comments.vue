@@ -18,24 +18,35 @@ export default {
              comments:[]
          }
      },
-     created: function(){
-         this.$http.get(
-             this.api + "/articles/"+this.$route.params.id+"/comments",
-         ).then(response =>{
-             var results = []
-             for (var i = 0; i < response.body.length; i++){
-                 var comment = response.body[i]
-                 results.push({
+     methods:{
+         fetchComments(){
+             this.$http.get(
+                 this.api + "/articles/"+this.$route.params.id+"/comments",
+             ).then(response =>{
+                 var results = []
+                 for (var i = 0; i < response.body.length; i++){
+                     var comment = response.body[i]
+                     results.push({
                          body:comment.body,
                          owner:comment.owner,
-                 })
-             }
-             this.comments = results
-         }, response => {
-             console.log(response.body);
-         });
+                     })
+                 }
+                 this.comments = results
+             }, response => {
+                 console.log(response.body);
+             });
+         }},
+     created: function(){
+         this.fetchComments(); 
+     },
+     watch: {
+         '$route.params.id'(newID, oldID){
+             alert('Hello');
+             this.fetchComments();
+         }
      }
  }
+ 
 </script>
 
 <style scoped>

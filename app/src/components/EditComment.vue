@@ -27,7 +27,7 @@
 <script>
     export default{
         name:'editComment',
-        global:['user'],
+        global:['user', 'api'],
         data (){
             return {
                 body:''
@@ -36,6 +36,18 @@
         methods:{
             editComment(e){
                 e.preventDefault();
+                this.$http.post(
+                    this.api+"/articles/"+this.$route.params.id+"/comments",
+                    {
+                        body:this.body,
+                        userID:this.user.id,
+                        token:this.user.token
+                    }).then(response => {
+                        this.$router.push({ path: '/articles/'+this.$route.params.id });
+                        this.clear(e);
+                    }, response => {
+                        this.errMsg.push(response.body.message);
+                    });
             },
             clear(e){
                 e.preventDefault();
