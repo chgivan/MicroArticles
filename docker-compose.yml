@@ -1,10 +1,19 @@
 version: '3'
 services:
+  app:
+    build: app
+    image: chgivan/micro/app:latest
+    ports:
+      - "80:80"
+    networks:
+      - front-net
+    deploy:
+      restart_policy:
+        condition: on-failure
   gateway:
     build: gateway
     image: chgivan/micro/gateway:latest
     ports:
-      - "80:80"
       - "8080:8080"
     networks:
       - front-net
