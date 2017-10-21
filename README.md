@@ -24,11 +24,11 @@ I would like to give me special thanks to the people  that help me create this p
 The appliction needs the **Docker** platform in order to run. Also needs **npm** package of Node.js to build the user interface of the website.
 
 >**Docker Install Links**
->[Install Docker on Linux (Ubuntu)](https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/)
->[Install Docker on Windows](https://docs.docker.com/docker-for-windows/install/)
->[Install Docker on Mac](https://docs.docker.com/docker-for-mac/install/)
+-[Install Docker on Linux (Ubuntu)](https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/)
+-[Install Docker on Windows](https://docs.docker.com/docker-for-windows/install/)
+-[Install Docker on Mac](https://docs.docker.com/docker-for-mac/install/)
 >**Node.js Install** *(only for user interface build)*
->[Node.js](https://nodejs.org/en/download/)
+-[Node.js](https://nodejs.org/en/download/)
 
 ----------
 
