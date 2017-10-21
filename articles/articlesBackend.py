@@ -17,7 +17,7 @@ articles = db["articles-collection"]
 app = Flask(__name__)
 
 @app.route("/articles", methods=["GET"])
-def listArticle():
+def listArticles():
     params = request.args
     limit = params.get(key="limit",default=10,type=int)
     ownerID = params.get(key="ownerID",default=None,type=int)
@@ -56,7 +56,7 @@ def getArticle(articleID):
     )
 
 @app.route("/articles", methods=["POST"])
-def createAsrticle():
+def createArticle():
     params = request.get_json()
     if params is None:
         return getResponse(400,message="Request body must be json type")

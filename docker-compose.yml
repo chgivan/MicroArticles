@@ -3,8 +3,6 @@ services:
   app:
     build: app
     image: chgivan/micro/app:latest
-    ports:
-      - "80:80"
     networks:
       - front-net
     deploy:
@@ -14,7 +12,7 @@ services:
     build: gateway
     image: chgivan/micro/gateway:latest
     ports:
-      - "8080:8080"
+      - "80:80"
     networks:
       - front-net
     deploy:
@@ -59,7 +57,7 @@ services:
       - front-net
       - back-net
   userdb:
-    image: postgres
+    image: "postgres"
     environment:
       - POSTGRES_PASSWORD=123456
       - POSTGRES_USER=my_user

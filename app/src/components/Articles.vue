@@ -40,7 +40,7 @@
      methods: {
          fetchArticles(){
              this.$http.get(
-                 this.api + "/articles",
+                 "/articles",
              ).then(response =>{
                  var results = []
                  for (var i = 0; i < response.body.length; i++){
