@@ -27,6 +27,7 @@ The appliction needs the **Docker** platform in order to run. Also needs **npm**
 - [Install Docker on Linux (Ubuntu)](https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/)
 - [Install Docker on Windows](https://docs.docker.com/docker-for-windows/install/)
 - [Install Docker on Mac](https://docs.docker.com/docker-for-mac/install/)
+
 **Node.js Install** *(only for user interface build)*
 - [Node.js](https://nodejs.org/en/download/)
 
